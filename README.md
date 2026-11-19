@@ -1,23 +1,23 @@
 # aai-open
 
-Open evaluation harness for **AAI-open**, an open stand-in for the Artificial Analysis Intelligence Index
-(Terminal-Bench 2.1, Terminal-Bench-Science lite, AutomationBench, AA-Omniscience, CritPt, HLE-Diamond, GDP.pdf,
-GDPval, SciCode). It is the code behind the evaluations reported with our synthetic-data results; the data
-generation code is in the companion repository `synth-data`.
+| AAI-open benchmark | Weight | Stands in for (AA Intelligence Index v5.0) | Why | How it differs from AA's version |
+|---|---:|---|---|---|
+| Terminal-Bench 2.1 | 10 | Terminal-Bench 4.0 | TB 4.0 is near zero for open models (Qwen3.8 27B: 5.6 on TB 4.0 vs 79.8 on TB 2.1), so it gives no signal | 84 of the 89 tasks (tasks no reference model solved are dropped), 3 repeats; Pi agent harness instead of Terminus 2 |
+| Terminal-Bench-Science lite | 15 | Terminal-Bench-Science | TB-Science 0.1 is also near zero for open models (Qwen3.8 27B Xhigh: 0.5) | an in-house pool of the upstream tasks labelled `lite` (well built, parked as too easy for frontier models): 32 of 135 tasks, 2 repeats; AA has no number for it |
+| AutomationBench | 5 | AutomationBench | the same benchmark | the public set, 446 of 600 tasks (unsolved tasks dropped, then a random share), 1 repeat; Pi agent harness |
+| AA-Omniscience | 10 + 5 | AA-Omniscience (accuracy 10, non-hallucination rate 5) | the same benchmark | the 300 public v1.1 questions instead of all 3,000 (2,700 are private; AA reports a −0.2 pt public−private gap), 3 repeats; self-hosted judge (Qwen3.8-27B) |
+| CritPt | 10 | CritPt | the answers are hidden; only the authors' server grades them | scored as agreement with frozen reference answers from DeepSeek V4.1 Flash (Max) on all 70 problems, 3 repeats (a proxy, not the official grade); Pi agent harness instead of Stirrup |
+| HLE-Diamond (text) | 10 | HLE-Diamond | the same benchmark | the 728 text-only questions instead of all 1,000 (272 have images): a random 157, 2 repeats; self-hosted judge (Qwen3.8-27B) instead of GPT-5.6 Luna |
+| GDP.pdf (text) | 5 | GDP.pdf | the same benchmark | document text only (no page images), so 75 of the 100 tasks qualify: 37 of them (unsolved dropped), 2 repeats; self-hosted judge |
+| SciCode-Verified | 15 | FrontierCode 2.0 | FrontierCode 2.0 is private | SciCode-Verified v2 plus our fix pass (patch list v3): 60 of 64 problems, 6 repeats, background off; main-problem accuracy |
+| GDPval-AA (text) | 15 | AA-Briefcase | Briefcase is private; AA ranks models on GDPval-AA as on Briefcase (ρ = 0.97 over 137 models) | the public GDPval gold tasks, text-only subset (185 of 207), 1 repeat; deliverables judged pairwise against two fixed reference models by a self-hosted judge (Qwen3.8-27B), Bradley–Terry Elo with the human expert at 968, mapped to the slot with AA's clamp |
 
-Status: dry-run export, under review. Generated from private trunk commit `43d7f73b07a3` (see `CORE_VERSION`).
+Weights sum to 100; the aggregate is the weighted mean of the raw slot scores. Common to all benchmarks: a
+131,072-token context for every model, the agentic suites (Terminal-Bench 2.1, TB-Science lite, AutomationBench,
+CritPt, GDPval) run in the Pi coding-agent harness without compaction, the item subsets (about 30% of the full work)
+were chosen on open reference models, and judges are self-hosted open models. Exact pins: `docs/aai_open/VERSIONS.md`.
 
-## What is here
-
-| Path | What |
-|---|---|
-| `aa_evals/` | one package per benchmark (`aa_evals/<bench>/run.py`), graders and judges, the campaign launcher (`aa_evals/campaign/`), the Pi and single-turn runners (`aa_evals/common/pi_eval`, `aa_evals/common/harbor_mswea`) |
-| `harbor_ns/` | rootless container sandbox for task environments (Linux namespaces; no Docker daemon needed) |
-| `tb_agents/` | agent harness glue (Pi coding agent, terminus-2), response budgets and finish notices |
-| `inference/`, `task_synthesis/serve/`, `synth/teachers/` | model serving launcher (vLLM) and the serving specs we evaluated with |
-| `tbshared/`, `tbsched/` | shared utilities, the serving numerics record, the session scheduler |
-
-`synth/`, `task_synthesis/` and `eval_q35/` are present only as far as the harness imports them (shared core).
+Open evaluation harness for **AAI-open**, an open stand-in for the Artificial Analysis Intelligence Index v5.0.
 
 ## Running
 
